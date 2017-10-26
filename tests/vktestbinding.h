@@ -257,6 +257,8 @@ class DeviceMemory : public internal::NonDispHandle<VkDeviceMemory> {
     void unmap() const;
 
     static VkMemoryAllocateInfo alloc_info(VkDeviceSize size, uint32_t memory_type_index);
+    static VkMemoryAllocateInfo get_resource_alloc_info(const vk_testing::Device &dev, const VkMemoryRequirements &reqs,
+                                                        VkMemoryPropertyFlags mem_props);
 };
 
 class Fence : public internal::NonDispHandle<VkFence> {
@@ -612,6 +614,13 @@ inline VkMemoryAllocateInfo DeviceMemory::alloc_info(VkDeviceSize size, uint32_t
     info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     info.allocationSize = size;
     info.memoryTypeIndex = memory_type_index;
+    return info;
+}
+
+inline VkMemoryAllocateInfo DeviceMemory::get_resource_alloc_info(const vk_testing::Device &dev, const VkMemoryRequirements &reqs,
+                                                                  VkMemoryPropertyFlags mem_props) {
+    VkMemoryAllocateInfo info = vk_testing::DeviceMemory::alloc_info(reqs.size, 0);
+    dev.phy().set_memory_type(reqs.memoryTypeBits, &info, mem_props);
     return info;
 }
 
